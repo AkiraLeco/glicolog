@@ -230,6 +230,7 @@ Candidatas naturais, em ordem sugerida:
 6. Registro de carboidratos.
 7. HbA1c estimada (GMI).
 8. PWA instalável.
+9. Serviço de e-mail próprio (ex.: Resend, plano grátis) no Supabase: o e-mail embutido tem limite muito baixo de envios por hora e só envia em inglês. Fazer junto com a publicação (Etapa 10), com modelos de e-mail em português.
 
 ## 11. Decisões registradas
 

@@ -3,8 +3,8 @@ import {
   esquemaCadastro,
   esquemaEntrar,
   esquemaRedefinirSenha,
-  validarFormulario,
 } from "./esquemas";
+import { validarFormulario } from "../formulario";
 
 function form(dados: Record<string, string>) {
   const fd = new FormData();

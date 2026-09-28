@@ -24,3 +24,7 @@ O dono do projeto não é desenvolvedor. Faça todo o código e comandos; quando
 ## Comandos
 - `npm run dev` — servidor local em http://localhost:3000
 - `npm run lint` / `npm run typecheck` / `npm test`
+- `npm run test:e2e` — Playwright em 320/768/1440px; loga com usuários de teste
+  (`teste-a@` e `teste-b@glicolog.test`, criados direto no banco, confirmados) cujas
+  credenciais ficam em `.env.test.local` (fora do git). Capturas em `e2e/.capturas/`.
+- `npm run db:types` — regenera os tipos após mudar migrations

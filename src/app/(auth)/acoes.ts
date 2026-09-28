@@ -7,11 +7,10 @@ import {
   esquemaEntrar,
   esquemaRecuperarSenha,
   esquemaRedefinirSenha,
-  validarFormulario,
-  type ErrosDeCampo,
 } from "@/lib/auth/esquemas";
 import { mensagemDeErro } from "@/lib/auth/mensagens";
 import { destinoSeguro } from "@/lib/auth/rotas";
+import { texto, validarFormulario, type ErrosDeCampo } from "@/lib/formulario";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
 
 export type EstadoFormulario = {
@@ -31,11 +30,6 @@ async function obterOrigem() {
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const protocolo = h.get("x-forwarded-proto") ?? "http";
   return `${protocolo}://${host}`;
-}
-
-function texto(formData: FormData, campo: string) {
-  const valor = formData.get(campo);
-  return typeof valor === "string" ? valor : "";
 }
 
 export async function entrar(
