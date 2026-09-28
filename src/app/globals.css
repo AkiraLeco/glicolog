@@ -54,12 +54,15 @@
 }
 
 :root {
-  /* Faixas de glicemia — todas com contraste ≥ 4.5:1 sobre branco (texto) */
-  --faixa-hipo-grave: oklch(0.44 0.17 25);
-  --faixa-hipo: oklch(0.53 0.21 27);
-  --faixa-alvo: oklch(0.5 0.13 150);
-  --faixa-hiper: oklch(0.53 0.15 55);
-  --faixa-hiper-grave: oklch(0.47 0.2 305);
+  /* Faixas de glicemia. Validadas com o validate_palette.js da skill dataviz
+     (vizinhas distinguíveis com visão normal e com daltonismo) e com contraste
+     de texto ≥ 4.5:1 sobre branco. O alvo é verde-azulado para não se confundir
+     com o laranja da hiper em protanopia. */
+  --faixa-hipo-grave: oklch(0.45 0.16 355);
+  --faixa-hipo: oklch(0.56 0.2 35);
+  --faixa-alvo: oklch(0.52 0.12 170);
+  --faixa-hiper: oklch(0.56 0.14 65);
+  --faixa-hiper-grave: oklch(0.45 0.19 295);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

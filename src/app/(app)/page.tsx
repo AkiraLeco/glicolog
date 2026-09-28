@@ -1,24 +1,31 @@
+import Link from "next/link";
 import { COR_TEXTO, IndicadorFaixa } from "@/components/glicemia/indicador-faixa";
+import { GraficoGlicemia } from "@/components/grafico/grafico-glicemia";
 import { RegistrarGlicemia, RegistrarInsulina } from "@/components/registro/dialogos-registro";
 import { ListaRegistros } from "@/components/registro/lista-registros";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   obterFaixas,
+  obterGlicemiasEntre,
   obterRegistrosDesde,
   obterUltimaGlicemia,
   type RegistroGlicemia,
 } from "@/lib/dados/consultas";
 import { formatarDiaExtenso, formatarHora, inicioDoDia, tempoDecorrido } from "@/lib/dominio/datas";
 import { classificar, type Faixas } from "@/lib/dominio/faixas";
+import { marcasUltimas24h, pontosDoGrafico } from "@/lib/dominio/periodos";
 import { cn } from "@/lib/utils";
 
 export default async function Inicio() {
   const agora = new Date();
-  const [faixas, ultima, hoje] = await Promise.all([
+  const umDiaAtras = new Date(agora.getTime() - 24 * 3600_000);
+  const [faixas, ultima, hoje, ultimas24h] = await Promise.all([
     obterFaixas(),
     obterUltimaGlicemia(),
     obterRegistrosDesde(inicioDoDia(agora)),
+    obterGlicemiasEntre(umDiaAtras, agora),
   ]);
+  const pontos24h = pontosDoGrafico(ultimas24h, faixas);
 
   return (
     <div className="grid gap-6">
@@ -33,6 +40,31 @@ export default async function Inicio() {
             <RegistrarGlicemia faixas={faixas} />
             <RegistrarInsulina />
           </div>
+
+          {pontos24h.length > 0 && (
+            <Card className="gap-2">
+              <CardHeader className="flex flex-row items-baseline justify-between gap-2">
+                <CardTitle>
+                  <h2>Últimas 24 horas</h2>
+                </CardTitle>
+                <Link href="/grafico" className="text-sm underline underline-offset-4">
+                  Ver gráfico
+                </Link>
+              </CardHeader>
+              <CardContent>
+                <figure aria-label={`Gráfico das últimas 24 horas: ${pontos24h.length} ${pontos24h.length === 1 ? "medição" : "medições"}`}>
+                  <GraficoGlicemia
+                    compacto
+                    pontos={pontos24h}
+                    faixas={faixas}
+                    dominio={[umDiaAtras.getTime(), agora.getTime()]}
+                    marcas={marcasUltimas24h(agora)}
+                    formatoMarcas="hora"
+                  />
+                </figure>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <Card>
