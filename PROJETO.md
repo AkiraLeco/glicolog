@@ -48,7 +48,7 @@
 ## 4. Escopo do MVP
 
 ### 4.1 Conta e acesso
-- Cadastro com e-mail e senha.
+- Cadastro com e-mail e senha (mínimo 8 caracteres), com confirmação por e-mail.
 - Login e logout.
 - Recuperação de senha por e-mail.
 - Cada usuário só acessa os próprios dados.

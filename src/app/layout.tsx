@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Glicolog",
+  title: { default: "Glicolog", template: "%s · Glicolog" },
   description: "Diário de glicemia e insulina",
 };
 
