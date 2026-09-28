@@ -4,11 +4,11 @@ import { ROTULO_CLASSIFICACAO, type Classificacao } from "@/lib/dominio/faixas";
 
 /** Classes de cor de texto por classificação (reutilizadas em listas e no gráfico). */
 export const COR_TEXTO: Record<Classificacao, string> = {
-  hipo_grave: "text-faixa-hipo-grave",
-  hipo: "text-faixa-hipo",
-  alvo: "text-faixa-alvo",
-  hiper: "text-faixa-hiper",
-  hiper_grave: "text-faixa-hiper-grave",
+  hipo_grave: "text-faixa-hipo-grave-texto",
+  hipo: "text-faixa-hipo-texto",
+  alvo: "text-faixa-alvo-texto",
+  hiper: "text-faixa-hiper-texto",
+  hiper_grave: "text-faixa-hiper-grave-texto",
 };
 
 const COR_FUNDO: Record<Classificacao, string> = {

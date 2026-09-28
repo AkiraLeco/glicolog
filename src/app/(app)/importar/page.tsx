@@ -33,7 +33,12 @@ export default function PaginaImportar() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 text-sm">
-          <div className="overflow-x-auto rounded-lg border">
+          <div
+            className="overflow-x-auto rounded-lg border focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+            tabIndex={0}
+            role="region"
+            aria-label="Exemplo de arquivo"
+          >
             <table className="w-full font-mono text-xs">
               <thead>
                 <tr className="bg-muted/50 text-left">

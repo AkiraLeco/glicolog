@@ -23,6 +23,8 @@ export default defineConfig({
   // O servidor de desenvolvimento às vezes demora a responder; uma nova tentativa
   // evita falsos negativos (o relatório marca esses testes como "flaky").
   retries: 1,
+  // Na primeira visita, o servidor de desenvolvimento compila a página (pode passar de 5 s).
+  expect: { timeout: 15_000 },
   reporter: [["list"]],
   use: {
     baseURL: "http://localhost:3000",

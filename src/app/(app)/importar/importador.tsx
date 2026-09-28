@@ -132,7 +132,13 @@ export function Importador() {
               <TriangleAlert className="size-4 text-destructive" aria-hidden />
               Linhas com erro (não serão importadas)
             </h3>
-            <div className="max-h-72 overflow-auto rounded-lg border">
+            {/* tabIndex: permite rolar a lista de erros pelo teclado */}
+            <div
+              className="max-h-72 overflow-auto rounded-lg border focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+              tabIndex={0}
+              role="region"
+              aria-label="Lista de linhas com erro"
+            >
               <table className="w-full text-sm" aria-label="Linhas com erro">
                 <thead className="sticky top-0 bg-background">
                   <tr className="text-left text-muted-foreground">

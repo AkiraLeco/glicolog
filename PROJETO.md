@@ -89,6 +89,8 @@ Celular                          Desktop
 ### 4.5 Histórico
 - Lista cronológica (mais recente primeiro) com glicemias e insulinas, agrupada por dia.
 - Valores de glicemia coloridos conforme a faixa (ver 5.1).
+- Mostra os últimos 30 dias; "Ver dias anteriores" amplia de 30 em 30, até 365 dias.
+- Cada registro tem um menu "⋯" com Editar e Excluir (este com confirmação).
 
 ### 4.6 Gráfico
 - Gráfico de linha da glicemia ao longo do tempo.
@@ -108,6 +110,8 @@ Celular                          Desktop
 - Textos `LO`/`HI` recebem mensagem específica: o aparelho não conseguiu medir o valor.
 - O usuário pode importar só as linhas válidas e ignorar as rejeitadas.
 - Duplicatas (mesma data/hora e mesmo valor de um registro existente) são ignoradas.
+- Linhas repetidas dentro do próprio arquivo também são mostradas e ignoradas.
+- Limites: 1 MB e 5.000 linhas por arquivo. O servidor valida o arquivo de novo antes de gravar.
 
 ## 5. Regras de domínio
 
@@ -115,13 +119,16 @@ Celular                          Desktop
 
 | Classificação | Faixa (mg/dL) | Destaque |
 |---|---|---|
-| Hipoglicemia grave | < 54 | vermelho escuro + ícone |
-| Hipoglicemia | 54–69 | vermelho + ícone |
-| **No alvo** | **70–180** | verde |
-| Hiperglicemia | 181–250 | laranja + ícone |
-| Hiperglicemia grave | > 250 | laranja escuro/roxo + ícone |
+| Hipoglicemia grave | < 54 | vinho + ícone ⌄⌄ |
+| Hipoglicemia | 54–69 | vermelho-alaranjado + ícone ⌄ |
+| **No alvo** | **70–180** | verde-azulado + ícone ✓ |
+| Hiperglicemia | 181–250 | laranja + ícone ⌃ |
+| Hiperglicemia grave | > 250 | roxo + ícone ⌃⌃ |
 
 > Os destaques **nunca dependem só da cor** (acessibilidade): usar também ícone e/ou rótulo textual.
+> As cores foram validadas para daltonismo (o alvo é verde-azulado, e não verde puro, para não se
+> confundir com o laranja da hiper). No gráfico, a forma do ponto também indica a faixa:
+> círculo = alvo, triângulo para baixo = hipo, triângulo para cima = hiper.
 
 ### 5.2 Segurança do paciente
 - O app **não sugere, calcula nem recomenda doses** de insulina.
@@ -241,7 +248,17 @@ Candidatas naturais, em ordem sugerida:
 | 3 | Valores fora de 20–600 na importação | **Rejeitar a linha** com motivo; nunca ajustar ao limite (ver 4.8) |
 | 4 | Tela inicial | Última glicemia + registro rápido + gráfico 24h + registros do dia (ver 4.2) |
 | 5 | Nome do app | **Glicolog** |
+| 6 | Histórico longo | Paginação por período: 30 dias por vez, até 365 (ver 4.5) |
+| 7 | Cores das faixas | Revalidadas para daltonismo; alvo verde-azulado (ver 5.1) |
+| 8 | Nome no menu | "Configurações" aparece como **Ajustes** (cabe na barra do celular) |
+| 9 | Exclusão de conta | Pede para digitar EXCLUIR; apaga todos os dados de uma vez |
 
-## 12. Questões em aberto
+## 12. Situação
+
+- **MVP completo** (seções 4.1 a 4.8), testado automaticamente em 320, 768 e 1440 px, com
+  verificação de acessibilidade (WCAG 2.2 AA, sem violações) e de isolamento de dados entre contas.
+- Falta: publicar na internet (Etapa 10) e, junto, o serviço de e-mail próprio (ideia 9).
+
+## 13. Questões em aberto
 
 - Nenhuma no momento.

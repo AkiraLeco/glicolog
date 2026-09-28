@@ -134,7 +134,13 @@ export default async function PaginaGrafico({ searchParams }: PageProps<"/grafic
                 <summary className="flex min-h-11 cursor-pointer items-center px-3 text-sm font-medium">
                   Ver valores em tabela
                 </summary>
-                <div className="max-h-96 overflow-auto border-t">
+                {/* tabIndex: permite rolar a tabela pelo teclado */}
+                <div
+                  className="max-h-96 overflow-auto border-t focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Tabela de valores"
+                >
                   <table className="w-full text-sm">
                     <caption className="sr-only">
                       Glicemias de {intervalo.rotulo}
