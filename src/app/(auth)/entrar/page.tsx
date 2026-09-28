@@ -7,7 +7,7 @@ import { FormularioEntrar } from "./formulario";
 export const metadata: Metadata = { title: "Entrar" };
 
 export default async function PaginaEntrar({ searchParams }: PageProps<"/entrar">) {
-  const { proximo, erro } = await searchParams;
+  const { proximo, erro, conta } = await searchParams;
 
   return (
     <Card>
@@ -18,6 +18,13 @@ export default async function PaginaEntrar({ searchParams }: PageProps<"/entrar"
         <CardDescription>Acesse seu diário de glicemia.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
+        {conta === "excluida" && (
+          <Alert>
+            <AlertDescription>
+              Sua conta e todos os seus dados foram excluídos.
+            </AlertDescription>
+          </Alert>
+        )}
         {erro === "link-invalido" && (
           <Alert variant="destructive">
             <AlertDescription>

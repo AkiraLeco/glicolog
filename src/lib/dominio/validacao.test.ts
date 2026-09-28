@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { validarFormulario } from "../formulario";
 import { paraDatetimeLocal } from "./datas";
-import { esquemaGlicemia, esquemaInsulina, formatarUnidades } from "./validacao";
+import { esquemaFaixas, esquemaGlicemia, esquemaInsulina, formatarUnidades } from "./validacao";
 
 function form(dados: Record<string, string>) {
   const fd = new FormData();
@@ -89,6 +89,38 @@ describe("esquemaInsulina", () => {
 
   it("100 U exatas não pedem confirmação", () => {
     expect(esquemaInsulina.safeParse({ ...base, unidades: "100" }).success).toBe(true);
+  });
+});
+
+describe("esquemaFaixas", () => {
+  const padrao = { hipoGrave: "54", hipo: "70", hiper: "180", hiperGrave: "250" };
+
+  it("aceita os valores padrão", () => {
+    expect(esquemaFaixas.parse(padrao)).toEqual({ hipoGrave: 54, hipo: 70, hiper: 180, hiperGrave: 250 });
+  });
+
+  it("exige ordem crescente, apontando o campo fora de ordem", () => {
+    const r = validarFormulario(esquemaFaixas, form({ ...padrao, hiper: "60" }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.erros.hiper?.[0]).toBe("Precisa ser maior que o limite de hipoglicemia (70).");
+      expect(r.erros.hiperGrave).toBeUndefined();
+    }
+  });
+
+  it("não aceita limites iguais", () => {
+    const r = validarFormulario(esquemaFaixas, form({ ...padrao, hipo: "54" }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.erros.hipo?.[0]).toMatch(/maior que o limite de hipoglicemia grave/);
+  });
+
+  it("recusa valores fora de 20–600 ou não inteiros", () => {
+    const r = validarFormulario(esquemaFaixas, form({ ...padrao, hipoGrave: "10", hiperGrave: "2,5" }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.erros.hipoGrave?.[0]).toBe("Use um valor entre 20 e 600.");
+      expect(r.erros.hiperGrave?.[0]).toBe("Use apenas números inteiros.");
+    }
   });
 });
 

@@ -70,6 +70,55 @@ export const esquemaInsulina = z
     path: ["confirmarDoseAlta"],
   });
 
+const limite = (rotulo: string) =>
+  z
+    .string({ error: `Informe o limite de ${rotulo}.` })
+    .trim()
+    .min(1, `Informe o limite de ${rotulo}.`)
+    .regex(/^\d+$/, "Use apenas números inteiros.")
+    .transform(Number)
+    .pipe(
+      z
+        .number()
+        .min(GLICEMIA_MIN, `Use um valor entre ${GLICEMIA_MIN} e ${GLICEMIA_MAX}.`)
+        .max(GLICEMIA_MAX, `Use um valor entre ${GLICEMIA_MIN} e ${GLICEMIA_MAX}.`),
+    );
+
+/**
+ * Limites das faixas (PROJETO.md, seção 5.1). Precisam estar em ordem crescente:
+ * hipo grave < hipo < hiper < hiper grave.
+ */
+export const esquemaFaixas = z
+  .object({
+    hipoGrave: limite("hipoglicemia grave"),
+    hipo: limite("hipoglicemia"),
+    hiper: limite("hiperglicemia"),
+    hiperGrave: limite("hiperglicemia grave"),
+  })
+  .superRefine((f, ctx) => {
+    if (f.hipo <= f.hipoGrave) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["hipo"],
+        message: `Precisa ser maior que o limite de hipoglicemia grave (${f.hipoGrave}).`,
+      });
+    }
+    if (f.hiper <= f.hipo) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["hiper"],
+        message: `Precisa ser maior que o limite de hipoglicemia (${f.hipo}).`,
+      });
+    }
+    if (f.hiperGrave <= f.hiper) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["hiperGrave"],
+        message: `Precisa ser maior que o limite de hiperglicemia (${f.hiper}).`,
+      });
+    }
+  });
+
 export type DadosGlicemia = z.infer<typeof esquemaGlicemia>;
 export type DadosInsulina = z.infer<typeof esquemaInsulina>;
 

@@ -1,10 +1,11 @@
-import { Droplet, LogOut } from "lucide-react";
+import { Droplet, Info, LogOut } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { NavegacaoInferior, NavegacaoLateral } from "@/components/navegacao/navegacao";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { obterUsuario } from "@/lib/supabase/servidor";
+import { AVISO_MEDICO } from "@/lib/textos";
 import { sair } from "../(auth)/acoes";
 
 function Marca() {
@@ -51,6 +52,13 @@ export default async function LayoutApp({ children }: LayoutProps<"/">) {
         </div>
         <NavegacaoLateral />
         <div className="mt-auto grid gap-1">
+          <Link
+            href="/sobre"
+            className="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            <Info className="size-4" aria-hidden />
+            Sobre
+          </Link>
           <p className="truncate px-3 text-xs text-muted-foreground" title={usuario.email}>
             {usuario.email}
           </p>
@@ -71,6 +79,12 @@ export default async function LayoutApp({ children }: LayoutProps<"/">) {
           className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-40 md:px-8 md:py-8"
         >
           {children}
+          <footer className="mt-12 border-t pt-4 text-xs text-muted-foreground">
+            {AVISO_MEDICO}{" "}
+            <Link href="/sobre" className="underline underline-offset-4">
+              Saiba mais
+            </Link>
+          </footer>
         </main>
       </div>
 
