@@ -1,6 +1,7 @@
 import "server-only";
 import { faixasDaConfiguracao, type Faixas } from "@/lib/dominio/faixas";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { buscarTodas } from "./paginar";
 import type { Registro, RegistroGlicemia, RegistroInsulina } from "./tipos";
 
 export type { Registro, RegistroGlicemia, RegistroInsulina } from "./tipos";
@@ -32,15 +33,16 @@ export async function obterUltimaGlicemia(): Promise<RegistroGlicemia | null> {
 /** Glicemias entre `desde` (inclusive) e `ate` (exclusive), em ordem cronológica. */
 export async function obterGlicemiasEntre(desde: Date, ate: Date): Promise<RegistroGlicemia[]> {
   const supabase = await criarClienteServidor();
-  const { data, error } = await supabase
-    .from("glicemias")
-    .select("id, valor_mgdl, medido_em")
-    .gte("medido_em", desde.toISOString())
-    .lt("medido_em", ate.toISOString())
-    .order("medido_em", { ascending: true })
-    // o limite padrão da API é 1000 linhas; 30 dias raramente passam disso
-    .limit(5000);
-  if (error) throw error;
+  const data = await buscarTodas((de, ate_) =>
+    supabase
+      .from("glicemias")
+      .select("id, valor_mgdl, medido_em")
+      .gte("medido_em", desde.toISOString())
+      .lt("medido_em", ate.toISOString())
+      .order("medido_em", { ascending: true })
+      .order("id")
+      .range(de, ate_),
+  );
   return data.map((g) => ({
     tipo: "glicemia",
     id: g.id,
@@ -57,18 +59,21 @@ export async function obterRegistrosEntre(desde: Date, ate: Date): Promise<Regis
   const supabase = await criarClienteServidor();
   const [glicemias, insulinas] = await Promise.all([
     obterGlicemiasEntre(desde, ate),
-    supabase
-      .from("insulinas")
-      .select("id, tipo, unidades, aplicado_em")
-      .gte("aplicado_em", desde.toISOString())
-      .lt("aplicado_em", ate.toISOString())
-      .limit(5000),
+    buscarTodas((de, ate_) =>
+      supabase
+        .from("insulinas")
+        .select("id, tipo, unidades, aplicado_em")
+        .gte("aplicado_em", desde.toISOString())
+        .lt("aplicado_em", ate.toISOString())
+        .order("aplicado_em", { ascending: true })
+        .order("id")
+        .range(de, ate_),
+    ),
   ]);
-  if (insulinas.error) throw insulinas.error;
 
   const registros: Registro[] = [
     ...glicemias,
-    ...insulinas.data.map(
+    ...insulinas.map(
       (i): RegistroInsulina => ({
         tipo: "insulina",
         id: i.id,

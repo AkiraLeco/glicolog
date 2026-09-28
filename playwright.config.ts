@@ -20,6 +20,9 @@ export default defineConfig({
   outputDir: "e2e/.resultados",
   fullyParallel: false,
   workers: 1,
+  // O servidor de desenvolvimento às vezes demora a responder; uma nova tentativa
+  // evita falsos negativos (o relatório marca esses testes como "flaky").
+  retries: 1,
   reporter: [["list"]],
   use: {
     baseURL: "http://localhost:3000",

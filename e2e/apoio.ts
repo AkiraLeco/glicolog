@@ -64,6 +64,19 @@ export function criarUsuarioDescartavel(email: string) {
   }
 }
 
+/** Apaga as glicemias do usuário de teste entre duas datas (ISO). */
+export async function apagarGlicemiasEntre(email: string | undefined, desde: string, ate: string) {
+  const { supabase, userId } = await clienteDeTeste(email);
+  const { error } = await supabase
+    .from("glicemias")
+    .delete()
+    .eq("user_id", userId)
+    .gte("medido_em", desde)
+    .lt("medido_em", ate);
+  if (error) throw error;
+  await supabase.auth.signOut();
+}
+
 /** Apaga os registros do usuário de teste e volta as faixas ao padrão. */
 export async function limparDadosDeTeste(email: string | undefined) {
   const { supabase, userId } = await clienteDeTeste(email);
