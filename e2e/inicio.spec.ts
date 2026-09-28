@@ -16,8 +16,8 @@ test("tela inicial mostra última glicemia, botões de registro e registros de h
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Última glicemia" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Hoje" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Glicemia" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Insulina" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Glicemia", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Insulina", exact: true })).toBeVisible();
   await semRolagemHorizontal(page);
   await page.screenshot({ path: `e2e/.capturas/inicio-${info.project.name}.png`, fullPage: true });
 });
@@ -29,7 +29,7 @@ test("registrar glicemia mostra a classificação e aparece na lista de hoje", a
   const valor = String(200 + Math.floor(Math.random() * 50)); // 200–249 → hiperglicemia
 
   await page.goto("/");
-  await page.getByRole("button", { name: "Glicemia" }).click();
+  await page.getByRole("button", { name: "Glicemia", exact: true }).click();
   const dialogo = page.getByRole("dialog", { name: "Registrar glicemia" });
   await expect(dialogo).toBeVisible();
 
@@ -53,7 +53,7 @@ test("registrar glicemia mostra a classificação e aparece na lista de hoje", a
 
 test("registrar insulina exige tipo e confirma doses altas", async ({ page }, info) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Insulina" }).click();
+  await page.getByRole("button", { name: "Insulina", exact: true }).click();
   const dialogo = page.getByRole("dialog", { name: "Registrar insulina" });
 
   await dialogo.getByLabel("Dose", { exact: true }).fill("4,5");

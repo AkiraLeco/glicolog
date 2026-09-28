@@ -1,7 +1,13 @@
 import { expect, test as setup } from "@playwright/test";
+import { limparDadosDeTeste } from "./apoio";
 
-/** Faz login com o usuário de teste A e salva a sessão para os outros testes. */
+/**
+ * Começa cada execução com o usuário de teste A zerado, faz login com ele e
+ * salva a sessão para os outros testes.
+ */
 setup("login do usuário de teste", async ({ page }) => {
+  await limparDadosDeTeste(process.env.E2E_EMAIL_A);
+
   const email = process.env.E2E_EMAIL_A;
   const senha = process.env.E2E_SENHA;
   if (!email || !senha) {

@@ -1,16 +1,9 @@
 import "server-only";
 import { faixasDaConfiguracao, type Faixas } from "@/lib/dominio/faixas";
 import { criarClienteServidor } from "@/lib/supabase/servidor";
+import type { Registro, RegistroGlicemia, RegistroInsulina } from "./tipos";
 
-export type RegistroGlicemia = { tipo: "glicemia"; id: string; em: Date; valor: number };
-export type RegistroInsulina = {
-  tipo: "insulina";
-  id: string;
-  em: Date;
-  tipoInsulina: "basal" | "bolus";
-  unidades: number;
-};
-export type Registro = RegistroGlicemia | RegistroInsulina;
+export type { Registro, RegistroGlicemia, RegistroInsulina } from "./tipos";
 
 // As consultas dependem do RLS: o banco só devolve linhas do usuário logado.
 
@@ -36,31 +29,45 @@ export async function obterUltimaGlicemia(): Promise<RegistroGlicemia | null> {
   return { tipo: "glicemia", id: data.id, em: new Date(data.medido_em), valor: data.valor_mgdl };
 }
 
-/** Glicemias e insulinas a partir de `desde`, da mais recente para a mais antiga. */
-export async function obterRegistrosDesde(desde: Date): Promise<Registro[]> {
+/** Glicemias entre `desde` (inclusive) e `ate` (exclusive), em ordem cronológica. */
+export async function obterGlicemiasEntre(desde: Date, ate: Date): Promise<RegistroGlicemia[]> {
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from("glicemias")
+    .select("id, valor_mgdl, medido_em")
+    .gte("medido_em", desde.toISOString())
+    .lt("medido_em", ate.toISOString())
+    .order("medido_em", { ascending: true })
+    // o limite padrão da API é 1000 linhas; 30 dias raramente passam disso
+    .limit(5000);
+  if (error) throw error;
+  return data.map((g) => ({
+    tipo: "glicemia",
+    id: g.id,
+    em: new Date(g.medido_em),
+    valor: g.valor_mgdl,
+  }));
+}
+
+/**
+ * Glicemias e insulinas entre `desde` (inclusive) e `ate` (exclusive),
+ * da mais recente para a mais antiga.
+ */
+export async function obterRegistrosEntre(desde: Date, ate: Date): Promise<Registro[]> {
   const supabase = await criarClienteServidor();
   const [glicemias, insulinas] = await Promise.all([
-    supabase
-      .from("glicemias")
-      .select("id, valor_mgdl, medido_em")
-      .gte("medido_em", desde.toISOString()),
+    obterGlicemiasEntre(desde, ate),
     supabase
       .from("insulinas")
       .select("id, tipo, unidades, aplicado_em")
-      .gte("aplicado_em", desde.toISOString()),
+      .gte("aplicado_em", desde.toISOString())
+      .lt("aplicado_em", ate.toISOString())
+      .limit(5000),
   ]);
-  if (glicemias.error) throw glicemias.error;
   if (insulinas.error) throw insulinas.error;
 
   const registros: Registro[] = [
-    ...glicemias.data.map(
-      (g): RegistroGlicemia => ({
-        tipo: "glicemia",
-        id: g.id,
-        em: new Date(g.medido_em),
-        valor: g.valor_mgdl,
-      }),
-    ),
+    ...glicemias,
     ...insulinas.data.map(
       (i): RegistroInsulina => ({
         tipo: "insulina",
@@ -72,4 +79,9 @@ export async function obterRegistrosDesde(desde: Date): Promise<Registro[]> {
     ),
   ];
   return registros.sort((a, b) => b.em.getTime() - a.em.getTime());
+}
+
+/** Registros de `desde` até agora (com folga para relógios adiantados). */
+export async function obterRegistrosDesde(desde: Date): Promise<Registro[]> {
+  return obterRegistrosEntre(desde, new Date(Date.now() + 24 * 3600_000));
 }

@@ -5,10 +5,13 @@ import { useActionState, useEffect, useId, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
 import {
+  atualizarGlicemia,
+  atualizarInsulina,
   registrarGlicemia,
   registrarInsulina,
   type EstadoRegistro,
 } from "@/app/(app)/acoes";
+import type { RegistroGlicemia, RegistroInsulina } from "@/lib/dados/tipos";
 import { IndicadorFaixa } from "@/components/glicemia/indicador-faixa";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -129,20 +132,30 @@ const CLASSE_NUMERO_GRANDE = "h-14 text-3xl font-semibold tabular-nums pointer-c
 // Glicemia
 // ---------------------------------------------------------------------------
 
-function FormularioGlicemia({ faixas, aoSalvar }: { faixas: Faixas; aoSalvar: () => void }) {
-  const [estado, acao] = useActionState(registrarGlicemia, {});
+function FormularioGlicemia({
+  faixas,
+  inicial,
+  aoSalvar,
+}: {
+  faixas: Faixas;
+  /** Registro existente, quando o formulário é de edição. */
+  inicial?: RegistroGlicemia;
+  aoSalvar: () => void;
+}) {
+  const [estado, acao] = useActionState(inicial ? atualizarGlicemia : registrarGlicemia, {});
   useAoSalvar(estado, aoSalvar);
   const { erros: errosDe, marcarEditado } = useErrosDoEnvio(estado);
 
   const id = useId();
-  const [valor, setValor] = useState("");
-  const [medidoEm, setMedidoEm] = useState(() => paraDatetimeLocal(new Date()));
+  const [valor, setValor] = useState(inicial ? String(inicial.valor) : "");
+  const [medidoEm, setMedidoEm] = useState(() => paraDatetimeLocal(inicial?.em ?? new Date()));
   const numero = /^\d+$/.test(valor) ? Number(valor) : NaN;
   const valido = numero >= GLICEMIA_MIN && numero <= GLICEMIA_MAX;
   const erros = errosDe("valor");
 
   return (
     <form action={acao} noValidate className="grid gap-4">
+      {inicial && <input type="hidden" name="id" value={inicial.id} />}
       <MensagemGeral mensagem={estado.mensagem} />
       <div className="grid gap-1.5">
         <Label htmlFor={id}>Valor</Label>
@@ -185,6 +198,38 @@ function FormularioGlicemia({ faixas, aoSalvar }: { faixas: Faixas; aoSalvar: ()
   );
 }
 
+/** Conteúdo do diálogo de glicemia (novo registro ou edição). */
+export function ConteudoDialogoGlicemia({
+  faixas,
+  inicial,
+  aoSalvar,
+}: {
+  faixas: Faixas;
+  inicial?: RegistroGlicemia;
+  aoSalvar: () => void;
+}) {
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Droplet className="size-5 text-destructive" aria-hidden />
+          {inicial ? "Editar glicemia" : "Registrar glicemia"}
+        </DialogTitle>
+        <DialogDescription>Valor medido no glicosímetro.</DialogDescription>
+      </DialogHeader>
+      {/* O conteúdo é desmontado ao fechar, então cada abertura começa do zero. */}
+      <FormularioGlicemia
+        faixas={faixas}
+        inicial={inicial}
+        aoSalvar={() => {
+          aoSalvar();
+          toast.success(inicial ? "Glicemia atualizada." : "Glicemia registrada.");
+        }}
+      />
+    </DialogContent>
+  );
+}
+
 export function RegistrarGlicemia({ faixas, className }: { faixas: Faixas; className?: string }) {
   const [aberto, setAberto] = useState(false);
 
@@ -196,23 +241,7 @@ export function RegistrarGlicemia({ faixas, className }: { faixas: Faixas; class
           Glicemia
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Droplet className="size-5 text-destructive" aria-hidden />
-            Registrar glicemia
-          </DialogTitle>
-          <DialogDescription>Valor medido no glicosímetro.</DialogDescription>
-        </DialogHeader>
-        {/* O conteúdo é desmontado ao fechar, então cada abertura começa do zero. */}
-        <FormularioGlicemia
-          faixas={faixas}
-          aoSalvar={() => {
-            setAberto(false);
-            toast.success("Glicemia registrada.");
-          }}
-        />
-      </DialogContent>
+      <ConteudoDialogoGlicemia faixas={faixas} aoSalvar={() => setAberto(false)} />
     </Dialog>
   );
 }
@@ -226,16 +255,25 @@ const TIPOS_INSULINA = [
   ["bolus", "Bolus", "rápida / refeição"],
 ] as const;
 
-function FormularioInsulina({ aoSalvar }: { aoSalvar: () => void }) {
-  const [estado, acao] = useActionState(registrarInsulina, {});
+function FormularioInsulina({
+  inicial,
+  aoSalvar,
+}: {
+  inicial?: RegistroInsulina;
+  aoSalvar: () => void;
+}) {
+  const [estado, acao] = useActionState(inicial ? atualizarInsulina : registrarInsulina, {});
   useAoSalvar(estado, aoSalvar);
   const { erros: errosDe, marcarEditado } = useErrosDoEnvio(estado);
 
   const id = useId();
-  const [tipo, setTipo] = useState("");
-  const [unidades, setUnidades] = useState("");
-  const [confirmado, setConfirmado] = useState(false);
-  const [aplicadoEm, setAplicadoEm] = useState(() => paraDatetimeLocal(new Date()));
+  const [tipo, setTipo] = useState<string>(inicial?.tipoInsulina ?? "");
+  const [unidades, setUnidades] = useState(inicial ? formatarUnidades(inicial.unidades) : "");
+  // Editar uma dose alta já confirmada não deve pedir a confirmação de novo.
+  const [confirmado, setConfirmado] = useState(
+    inicial ? inicial.unidades > INSULINA_DOSE_ALTA : false,
+  );
+  const [aplicadoEm, setAplicadoEm] = useState(() => paraDatetimeLocal(inicial?.em ?? new Date()));
 
   const numero = Number(unidades.replace(",", "."));
   const doseAlta = Number.isFinite(numero) && numero > INSULINA_DOSE_ALTA;
@@ -245,6 +283,7 @@ function FormularioInsulina({ aoSalvar }: { aoSalvar: () => void }) {
 
   return (
     <form action={acao} noValidate className="grid gap-4">
+      {inicial && <input type="hidden" name="id" value={inicial.id} />}
       <MensagemGeral mensagem={estado.mensagem} />
 
       <fieldset
@@ -336,6 +375,34 @@ function FormularioInsulina({ aoSalvar }: { aoSalvar: () => void }) {
   );
 }
 
+/** Conteúdo do diálogo de insulina (novo registro ou edição). */
+export function ConteudoDialogoInsulina({
+  inicial,
+  aoSalvar,
+}: {
+  inicial?: RegistroInsulina;
+  aoSalvar: () => void;
+}) {
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Syringe className="size-5" aria-hidden />
+          {inicial ? "Editar insulina" : "Registrar insulina"}
+        </DialogTitle>
+        <DialogDescription>Dose aplicada, em unidades (U).</DialogDescription>
+      </DialogHeader>
+      <FormularioInsulina
+        inicial={inicial}
+        aoSalvar={() => {
+          aoSalvar();
+          toast.success(inicial ? "Insulina atualizada." : "Insulina registrada.");
+        }}
+      />
+    </DialogContent>
+  );
+}
+
 export function RegistrarInsulina({ className }: { className?: string }) {
   const [aberto, setAberto] = useState(false);
 
@@ -347,21 +414,7 @@ export function RegistrarInsulina({ className }: { className?: string }) {
           Insulina
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Syringe className="size-5" aria-hidden />
-            Registrar insulina
-          </DialogTitle>
-          <DialogDescription>Dose aplicada, em unidades (U).</DialogDescription>
-        </DialogHeader>
-        <FormularioInsulina
-          aoSalvar={() => {
-            setAberto(false);
-            toast.success("Insulina registrada.");
-          }}
-        />
-      </DialogContent>
+      <ConteudoDialogoInsulina aoSalvar={() => setAberto(false)} />
     </Dialog>
   );
 }

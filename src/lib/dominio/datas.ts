@@ -29,6 +29,26 @@ export function inicioDoDia(data: Date): Date {
   return new Date(startOfDay(new TZDate(data, FUSO)).getTime());
 }
 
+/** Chave "AAAA-MM-DD" do dia (horário de Brasília) de uma data. */
+export function chaveDoDia(data: Date): string {
+  return format(new TZDate(data, FUSO), "yyyy-MM-dd");
+}
+
+/**
+ * Agrupa itens pelo dia de Brasília, mantendo a ordem de entrada
+ * (tanto dos dias quanto dos itens dentro de cada dia).
+ */
+export function agruparPorDia<T extends { em: Date }>(itens: T[]): { dia: Date; itens: T[] }[] {
+  const grupos = new Map<string, { dia: Date; itens: T[] }>();
+  for (const item of itens) {
+    const chave = chaveDoDia(item.em);
+    const grupo = grupos.get(chave);
+    if (grupo) grupo.itens.push(item);
+    else grupos.set(chave, { dia: inicioDoDia(item.em), itens: [item] });
+  }
+  return [...grupos.values()];
+}
+
 /** "14:35" no fuso do app. */
 export function formatarHora(data: Date): string {
   return format(new TZDate(data, FUSO), "HH:mm");

@@ -1,10 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Credenciais dos usuários de teste (arquivo local, fora do git).
-try {
-  process.loadEnvFile(".env.test.local");
-} catch {
-  // Sem o arquivo, os testes que precisam de login falham com uma mensagem clara.
+// URL/chave do Supabase e credenciais dos usuários de teste (arquivos locais, fora do git).
+for (const arquivo of [".env.local", ".env.test.local"]) {
+  try {
+    process.loadEnvFile(arquivo);
+  } catch {
+    // Sem o arquivo, os testes que precisam de login falham com uma mensagem clara.
+  }
 }
 
 const LARGURAS = {
